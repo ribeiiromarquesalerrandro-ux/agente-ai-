@@ -36,4 +36,4 @@
 - [x] Validar em celular as telas de Ferramentas, Agente, GitHub, Desktop e Acessos e registrar os achados.
 - [x] Executar e registrar uma checagem de acessibilidade para foco visível, navegação por teclado, contraste e estados interativos principais.
 - [x] Sincronizar o redesenho final com o GitHub e confirmar o repositório limpo após as últimas alterações.
-- [ ] Enviar as últimas alterações do redesenho, documentação e validações ao GitHub e confirmar o repositório limpo após o push.
+- [x] Enviar as últimas alterações do redesenho, documentação e validações ao GitHub e confirmar o repositório limpo após o push.
