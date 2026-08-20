@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AIChatBox, type Message as ChatMessage } from "@/components/AIChatBox";
+import { CommandDeck } from "@/components/CommandDeck";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -358,6 +359,7 @@ export default function Home() {
           onImage={() => void handleImageRequest()}
           imageLoading={generateImage.isPending}
           onExport={exportConversation}
+          onNewConversation={() => void createNewConversation()}
         />}
         {view === "tools" && <ToolsPanel />}
         {view === "config" && <ConfigPanel draft={draft} setDraft={setDraft} models={ollamaModels} allowedModels={settingsQuery.data?.allowedModels ?? []} connecting={false} onConnect={() => void connectOllama()} onSave={() => void saveSettings.mutateAsync(draft)} saving={saveSettings.isPending} isOwner={user.role === "owner"} isProMax={user.plan === "pro_max"} />}
@@ -373,9 +375,9 @@ function PanelHeading({ code, title, description }: { code: string; title: strin
   return <div className="mb-6"><p className="font-mono text-[11px] tracking-[0.2em] text-fuchsia-300">[{code}]</p><h2 className="glitch-title mt-2 text-3xl font-black sm:text-4xl">{title}</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">{description}</p></div>;
 }
 
-function ChatPanel({ messages, isStreaming, selectedConversationId, onSend, onVoice, isRecording, voiceLoading, onImage, imageLoading, onExport }: { messages: ChatMessage[]; isStreaming: boolean; selectedConversationId: number | null; onSend: (content: string) => void; onVoice: () => void; isRecording: boolean; voiceLoading: boolean; onImage: () => void; imageLoading: boolean; onExport: (format: "json" | "csv" | "text") => void }) {
+function ChatPanel({ messages, isStreaming, selectedConversationId, onSend, onVoice, isRecording, voiceLoading, onImage, imageLoading, onExport, onNewConversation }: { messages: ChatMessage[]; isStreaming: boolean; selectedConversationId: number | null; onSend: (content: string) => void; onVoice: () => void; isRecording: boolean; voiceLoading: boolean; onImage: () => void; imageLoading: boolean; onExport: (format: "json" | "csv" | "text") => void; onNewConversation: () => void }) {
   return <div className="mx-auto max-w-[1600px] p-4 sm:p-6"><div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p className="font-mono text-[11px] tracking-[0.2em] text-cyan-300">[CHANNEL_01 // OLLAMA_STREAM]</p><h1 className="glitch-title mt-1 text-3xl font-black sm:text-4xl">CONVERSA ATIVA</h1></div><div className="flex gap-2"><Button variant="outline" size="sm" className="system-outline" disabled={!selectedConversationId} onClick={() => onExport("json")}>JSON</Button><Button variant="outline" size="sm" className="system-outline" disabled={!selectedConversationId} onClick={() => onExport("csv")}>CSV</Button><Button variant="outline" size="sm" className="system-outline" disabled={!selectedConversationId} onClick={() => onExport("text")}>TXT</Button></div></div>
-    {!selectedConversationId ? <div className="system-card grid min-h-[55vh] place-items-center p-8 text-center"><div><Bot className="mx-auto size-10 text-cyan-300" /><p className="mt-4 font-mono text-sm text-zinc-400">CRIE UMA CONVERSA PARA ABRIR O CANAL DE INFERÊNCIA.</p></div></div> : <><AIChatBox messages={messages} onSendMessage={onSend} isLoading={isStreaming} height="calc(100vh - 270px)" placeholder="Envie uma instrução ao agente local…" emptyStateMessage="Canal pronto. Aguardando entrada do usuário." />
+    {!selectedConversationId ? <CommandDeck onNewConversation={onNewConversation} /> : <><AIChatBox messages={messages} onSendMessage={onSend} isLoading={isStreaming} height="calc(100vh - 270px)" placeholder="Envie uma instrução ao agente local…" emptyStateMessage="Canal pronto. Aguardando entrada do usuário." />
       <div className="mt-3 flex flex-wrap items-center gap-2"><Button onClick={onVoice} disabled={voiceLoading || isStreaming} variant="outline" className={cn("system-outline", isRecording && "border-fuchsia-400 text-fuchsia-200")}><Mic className={cn("mr-2 size-4", isRecording && "animate-pulse")} />{isRecording ? "PARAR GRAVAÇÃO" : voiceLoading ? "TRANSCRITANDO" : "VOZ"}</Button><Button onClick={onImage} disabled={imageLoading || isStreaming} variant="outline" className="system-outline"><ImagePlus className="mr-2 size-4" />{imageLoading ? "GERANDO" : "GERAR IMAGEM"}</Button><span className="ml-auto hidden font-mono text-[10px] tracking-[0.12em] text-zinc-500 sm:block">STREAM://LOCAL_ONLY</span></div></>}
   </div>;
 }

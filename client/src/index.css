@@ -56,6 +56,20 @@ button, input, textarea { font: inherit; }
 .system-label { font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: .11em; color: #82f7ff; }
 .system-input { margin-top: .35rem; border-radius: 0; border-color: rgba(255,255,255,.16); background: rgba(4,5,8,.55); color: #f4f4f5; font-family: "IBM Plex Mono", monospace; font-size: 13px; }
 .system-input:focus { border-color: rgba(99,255,255,.7); box-shadow: 3px 0 rgba(255,0,184,.3); }
+.command-deck { position: relative; border: 1px solid rgba(205, 229, 255, .2); background: linear-gradient(125deg, rgba(16, 27, 38, .97), rgba(9, 10, 15, .97) 57%, rgba(29, 11, 31, .84)); box-shadow: 0 0 0 1px rgba(0,255,255,.04) inset, 0 32px 90px rgba(0,0,0,.28); }
+.command-deck-grid { position: absolute; inset: 0; opacity: .22; background-image: linear-gradient(rgba(109, 244, 255, .18) 1px, transparent 1px), linear-gradient(90deg, rgba(109, 244, 255, .13) 1px, transparent 1px); background-size: 32px 32px; mask-image: linear-gradient(to bottom, black, transparent 80%); }
+.command-deck-glow { position: absolute; width: 34rem; height: 34rem; right: -12rem; top: -12rem; border-radius: 999px; background: radial-gradient(circle, rgba(0,225,255,.2), transparent 68%); filter: blur(12px); }
+.command-key { display: flex; align-items: center; gap: .55rem; border: 1px solid rgba(255,255,255,.12); padding: .65rem .8rem; background: rgba(0,0,0,.2); font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: .08em; color: #a1a1aa; }
+.command-key span { display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid rgba(255,255,255,.23); color: #d9ffff; }
+.telemetry-card { border: 1px solid rgba(255,255,255,.11); background: rgba(3,6,10,.38); padding: 1rem; }
+.telemetry-card-main { position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(0,235,255,.1), rgba(6,8,12,.5) 55%, rgba(255,0,184,.08)); }
+.telemetry-card-main::after { content: ""; position: absolute; width: 130px; height: 1px; right: -18px; bottom: 18px; background: #7ff; box-shadow: 0 8px 0 rgba(255,0,184,.6), 0 16px 0 rgba(127,255,255,.28); transform: rotate(-35deg); }
+.signal-bars { display: flex; align-items: end; gap: 4px; height: 26px; }
+.signal-bars i { width: 5px; background: linear-gradient(to top, #5af6ff, #ec68cf); opacity: .76; }
+.signal-bars i:nth-child(1), .signal-bars i:nth-child(7) { height: 28%; } .signal-bars i:nth-child(2), .signal-bars i:nth-child(6) { height: 55%; } .signal-bars i:nth-child(3), .signal-bars i:nth-child(5) { height: 82%; } .signal-bars i:nth-child(4) { height: 100%; } .signal-bars i:nth-child(8) { height: 42%; }
+.live-dot { width: 7px; height: 7px; border-radius: 999px; background: #6ff; box-shadow: 0 0 0 4px rgba(102,255,255,.09), 0 0 15px rgba(102,255,255,.8); }
 
-@media (prefers-reduced-motion: no-preference) { .glitch-title { animation: flicker 8s steps(1,end) infinite; } }
+@media (prefers-reduced-motion: no-preference) { .glitch-title { animation: flicker 8s steps(1,end) infinite; } .command-deck-glow { animation: drift 8s ease-in-out infinite alternate; } .signal-bars i { animation: signal 1.8s ease-in-out infinite alternate; } .signal-bars i:nth-child(2n) { animation-delay: .35s; } }
 @keyframes flicker { 0%, 95%, 100% { filter: none; } 96% { filter: contrast(1.2) hue-rotate(12deg); } 97% { filter: translateX(1px); } }
+@keyframes drift { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(-36px,28px,0) scale(1.12); } }
+@keyframes signal { from { transform: scaleY(.54); transform-origin: bottom; opacity: .34; } to { transform: scaleY(1); transform-origin: bottom; opacity: 1; } }
