@@ -23,4 +23,5 @@
 - [x] Adicionar controle de modelos por plano e owner, com lista permitida por plano e validação ao salvar configurações e iniciar chats.
 - [x] Expandir o catálogo para permitir ativação individual por API e referências estruturadas de credenciais gerenciadas pelo owner.
 - [x] Criar testes Vitest para preferências do agente, persistência de conversas e exportação JSON, CSV e texto simples.
-- [ ] Validar a interface em desktop e mobile, documentar a instalação e sincronizar a versão final com o GitHub.
+- [x] Validar a interface em desktop e mobile, documentar a instalação e sincronizar a versão final com o GitHub.
+- [ ] Sincronizar novamente as últimas notas de validação com o GitHub e registrar o hash final enviado.
