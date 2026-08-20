@@ -28,3 +28,12 @@
 - [x] Pesquisar vídeos públicos de design de sites no Instagram e sintetizar padrões visuais originais aplicáveis ao Agente AI Local.
 - [x] Atualizar a interface retro-futurista com os padrões visuais selecionados, preservando a responsividade e os fluxos existentes.
 - [x] Validar a atualização em desktop e celular, executar testes e sincronizar a revisão visual com o GitHub.
+- [x] Redesenhar a arquitetura visual completa do aplicativo, com identidade mais expressiva e hierarquia de informação reforçada.
+- [x] Reconstruir as telas de chat, ferramentas, agente, GitHub, desktop e acessos com componentes e layout visualmente mais chamativos.
+- [x] Aplicar tratamentos visuais e composições específicas às telas de Ferramentas, Agente, GitHub, Desktop e Acessos, além do sistema de estilos compartilhado.
+- [x] Validar visualmente cada tela atualizada em desktop e celular e registrar os resultados antes da entrega.
+- [x] Ajustar a nova interface para celular e desktop, validar acessibilidade e sincronizar a revisão integral com o GitHub.
+- [x] Validar em celular as telas de Ferramentas, Agente, GitHub, Desktop e Acessos e registrar os achados.
+- [x] Executar e registrar uma checagem de acessibilidade para foco visível, navegação por teclado, contraste e estados interativos principais.
+- [x] Sincronizar o redesenho final com o GitHub e confirmar o repositório limpo após as últimas alterações.
+- [ ] Enviar as últimas alterações do redesenho, documentação e validações ao GitHub e confirmar o repositório limpo após o push.
