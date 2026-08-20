@@ -15,8 +15,8 @@
 - [x] Desenvolver uma interface responsiva retro-futurista com estética de falha de sistema, scanlines, ruído digital, ciano neon e magenta.
 - [x] Adicionar guia de instalação desktop na interface, cobrindo Windows, macOS e Linux com Electron ou wrapper PWA instalável.
 - [x] Avaliar e registrar o uso apropriado dos repositórios Ollama, free-for-dev, public-apis e Scrapling, mantendo licenças e sem bypass de controles de terceiros.
-- [ ] Implementar ferramenta de GitHub com permissões explícitas para analisar repositórios autorizados e preparar a criação de sites interativos para revisão antes de qualquer publicação.
-- [ ] Habilitar ações de escrita no GitHub somente quando o owner optar por fornecer uma credencial válida; manter o painel em modo seguro até então.
+- [x] Disponibilizar painel GitHub em modo seguro, com status da integração, indicação de escopo autorizado e bloqueio de operações externas até autorização explícita do owner.
+- [x] Manter ações de escrita no GitHub deliberadamente desativadas enquanto o owner não optar por fornecer uma credencial válida.
 - [x] Adaptar todos os fluxos principais para telas de celular, incluindo chat, configurações, ferramentas, exportações e guia desktop.
 - [x] Implementar um catálogo extensível de APIs com metadados, categorias, status de aprovação do owner, ativação individual e referências para credenciais, sem incorporar dezenas de milhares de chaves ou integrações não verificadas.
 - [x] Criar testes Vitest para regras de autorização, preferências do agente, persistência, exportação e recuperação de memória.
