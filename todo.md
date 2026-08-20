@@ -1,0 +1,26 @@
+# Project TODO
+
+- [x] Definir o modelo de dados para conversas, mensagens, preferências do agente e trechos de memória contextual por usuário.
+- [x] Implementar controle de acesso com perfil `owner` administrador e usuários convidados com permissões limitadas.
+- [x] Permitir que o owner promova ou revogue administradores e visualize os usuários autorizados.
+- [x] Implementar planos Básico gratuito e Pro Max, com regras de acesso configuráveis para ferramentas, APIs aprovadas e modelos disponibilizados pelo owner.
+- [x] Implementar configuração persistente do agente com URL do Ollama, modelo ativo, temperatura, tamanho do contexto e prompt de sistema.
+- [x] Implementar integração com a API REST local do Ollama para listar modelos, validar conexão e enviar mensagens de chat por streaming.
+- [x] Implementar chat com streaming de respostas, renderização Markdown e persistência de histórico no banco de dados.
+- [x] Implementar memória contextual por sessão e recuperação simples de trechos relevantes de conversas anteriores para enriquecer prompts.
+- [x] Implementar ferramentas configuráveis de clima, notícias e câmbio, com ativação individual e uso apenas por fontes autorizadas.
+- [x] Implementar exportação de conversas nos formatos JSON, CSV e texto simples.
+- [x] Implementar entrada de voz com transcrição automática e envio do texto resultante ao agente.
+- [x] Implementar geração de imagens a partir de descrições textuais dentro do chat.
+- [x] Desenvolver uma interface responsiva retro-futurista com estética de falha de sistema, scanlines, ruído digital, ciano neon e magenta.
+- [x] Adicionar guia de instalação desktop na interface, cobrindo Windows, macOS e Linux com Electron ou wrapper PWA instalável.
+- [x] Avaliar e registrar o uso apropriado dos repositórios Ollama, free-for-dev, public-apis e Scrapling, mantendo licenças e sem bypass de controles de terceiros.
+- [ ] Implementar ferramenta de GitHub com permissões explícitas para analisar repositórios autorizados e preparar a criação de sites interativos para revisão antes de qualquer publicação.
+- [ ] Habilitar ações de escrita no GitHub somente quando o owner optar por fornecer uma credencial válida; manter o painel em modo seguro até então.
+- [x] Adaptar todos os fluxos principais para telas de celular, incluindo chat, configurações, ferramentas, exportações e guia desktop.
+- [x] Implementar um catálogo extensível de APIs com metadados, categorias, status de aprovação do owner, ativação individual e referências para credenciais, sem incorporar dezenas de milhares de chaves ou integrações não verificadas.
+- [x] Criar testes Vitest para regras de autorização, preferências do agente, persistência, exportação e recuperação de memória.
+- [x] Adicionar controle de modelos por plano e owner, com lista permitida por plano e validação ao salvar configurações e iniciar chats.
+- [x] Expandir o catálogo para permitir ativação individual por API e referências estruturadas de credenciais gerenciadas pelo owner.
+- [x] Criar testes Vitest para preferências do agente, persistência de conversas e exportação JSON, CSV e texto simples.
+- [ ] Validar a interface em desktop e mobile, documentar a instalação e sincronizar a versão final com o GitHub.

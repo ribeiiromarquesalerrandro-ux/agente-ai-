@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1787226347394,
+      "tag": "0000_cool_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1787226792957,
+      "tag": "0001_premium_apocalypse",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1787227133882,
+      "tag": "0002_quick_shriek",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787228263379,
+      "tag": "0003_spooky_killer_shrike",
+      "breakpoints": true
+    }
+  ]
+}

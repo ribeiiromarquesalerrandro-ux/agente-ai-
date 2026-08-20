@@ -1,0 +1,11 @@
+{
+  "name": "Agente AI Local",
+  "short_name": "Agente AI",
+  "description": "Interface local de agente de IA integrada ao Ollama.",
+  "lang": "pt-BR",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
+  "categories": ["productivity", "utilities"]
+}
