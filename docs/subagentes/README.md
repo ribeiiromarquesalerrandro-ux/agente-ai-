@@ -1,6 +1,6 @@
 # Subagentes do Claude Code
 
-Subagentes especializados que o Claude Code carrega automaticamente ao abrir este repositório.
+Subagentes especializados em `.claude/agents/`, que o Claude Code carrega automaticamente ao abrir este repositório.
 
 | Subagente | Para que serve |
 |---|---|
