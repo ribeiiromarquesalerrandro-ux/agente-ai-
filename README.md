@@ -47,6 +47,24 @@ pnpm dev
 
 No painel **Agente**, confirme a URL local do Ollama, normalmente `http://localhost:11434`, clique em **VERIFICAR** e selecione um modelo autorizado. Em uma instalação web remota, o servidor Ollama deve estar acessível ao dispositivo do usuário e configurado para aceitar a origem da aplicação; a alternativa recomendada para uso local é instalar a PWA no mesmo computador que executa o Ollama.
 
+## Usar modelos gratuitos com o FreeLLMAPI
+
+O [FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi) reúne os planos gratuitos de vários provedores (Google Gemini, Groq, OpenRouter e outros) e imita a API do Ollama. Assim, o agente pode usar esses modelos sem nenhuma mudança no código: basta trocar a URL do Ollama.
+
+1. Instale e inicie o FreeLLMAPI seguindo o [guia de instalação](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/install/01-install.md). O painel dele abre em `http://localhost:5173` (desenvolvimento) ou `http://localhost:3001` (Docker).
+2. No painel do FreeLLMAPI, em **Keys**, cadastre a chave gratuita de pelo menos um provedor, por exemplo do [Google AI Studio](https://aistudio.google.com/apikey) ou da [Groq](https://console.groq.com/keys).
+3. Ainda na página **Keys**, na seção de compatibilidade com agentes, crie um **URL token**. Ele gera um endereço no formato `http://localhost:3001/v1/t/<token>`, que já inclui a autenticação.
+4. Libere a origem do agente no `.env` do FreeLLMAPI e reinicie-o:
+
+   ```bash
+   DASHBOARD_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+   ```
+
+5. Como owner, em **Acessos**, autorize para cada plano os nomes de modelo que serão usados, como `auto` (o FreeLLMAPI escolhe o melhor modelo disponível) ou um modelo específico, como `gemini-2.5-flash`.
+6. No painel **Agente**, coloque o endereço do passo 3 em **URL DO SERVIDOR OLLAMA**, clique em **VERIFICAR** e selecione o modelo.
+
+O URL token funciona como uma senha: não o compartilhe e revogue-o no painel do FreeLLMAPI se ele vazar.
+
 ## Uso em Windows, macOS e Linux
 
 A aplicação inclui um manifesto PWA e pode ser instalada pelo navegador compatível usando a opção **Instalar aplicativo**. O fluxo é o mesmo nos três sistemas operacionais: instale o Ollama, obtenha os modelos escolhidos, abra a aplicação e use a URL local do Ollama.
