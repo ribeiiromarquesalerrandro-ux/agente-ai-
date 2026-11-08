@@ -77,6 +77,17 @@ export const apiCatalogSettings = mysqlTable("api_catalog_settings", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const youtubeConnections = mysqlTable("youtube_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  channelId: varchar("channelId", { length: 128 }).notNull(),
+  channelTitle: text("channelTitle").notNull(),
+  encryptedRefreshToken: text("encryptedRefreshToken").notNull(),
+  grantedScopes: text("grantedScopes").notNull(),
+  connectedAt: timestamp("connectedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const planModelAccess = mysqlTable("plan_model_access", {
   id: int("id").autoincrement().primaryKey(),
   plan: mysqlEnum("plan", ["basic", "pro_max"]).notNull(),
