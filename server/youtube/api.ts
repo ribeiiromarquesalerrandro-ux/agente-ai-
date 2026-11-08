@@ -86,7 +86,9 @@ export async function getYouTubeRecentVideos(userId: number, maxResults = 10) {
 }
 
 function validDate(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + "T00:00:00Z"));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(value + "T00:00:00Z");
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 export async function getYouTubeAnalytics(userId: number, startDate: string, endDate: string) {
@@ -117,7 +119,7 @@ export async function getYouTubeAnalytics(userId: number, startDate: string, end
 
 
 async function verifyAssetHash(url: string, expectedSize: number, expectedHash: string) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(120_000) });
+  const response = await fetch(url, { signal: AbortSignal.timeout(900_000) });
   if (!response.ok || !response.body) throw new Error("Stored video could not be read before YouTube upload.");
   const hash = createHash("sha256");
   let total = 0;
