@@ -69,7 +69,7 @@ async function verifyStoredObject(objectKey: string, expectedSize: number, expec
   const data = await presign.json() as { url?: string };
   if (!data.url || !data.url.startsWith("https://")) throw new Error("Storage service returned an invalid download URL.");
 
-  const response = await fetch(data.url, { signal: AbortSignal.timeout(120_000) });
+  const response = await fetch(data.url, { signal: AbortSignal.timeout(900_000) });
   if (!response.ok || !response.body) throw new Error("Stored video could not be read for verification.");
   const hash = createHash("sha256");
   let totalBytes = 0;
@@ -131,7 +131,7 @@ export function registerYouTubeHandoffRoutes(app: Express) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
-    const manifest = parseManifest(req.body);
+    const manifest = parseHandoffManifest(req.body);
     const objectKey = req.body && typeof req.body === "object" ? (req.body as Record<string, unknown>).objectKey : undefined;
     if (!manifest || typeof objectKey !== "string" ||
         !objectKey.startsWith(`youtube-handoff/${manifest.productionId}/`) ||
