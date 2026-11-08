@@ -222,7 +222,7 @@ export function registerYouTubeMcpRoutes(app: Express) {
       res.status(202).end();
       return;
     }
-    res.setHeader("MCP-Protocol-Version", "2025-03-26");
+    res.setHeader("MCP-Protocol-Version", typeof message.params?.protocolVersion === "string" && MCP_PROTOCOL_VERSIONS.has(message.params.protocolVersion) ? message.params.protocolVersion : "2025-03-26");
     res.status(200).type("application/json").send(response);
   });
 
