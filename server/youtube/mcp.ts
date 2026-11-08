@@ -96,7 +96,7 @@ async function callTool(name: string) {
   throw new Error("Unknown YouTube MCP tool.");
 }
 
-async function handleJsonRpc(message: JsonRpcRequest) {
+export async function handleJsonRpc(message: JsonRpcRequest) {
   if (message.jsonrpc !== "2.0" || typeof message.method !== "string") {
     return jsonRpcError(message.id, -32600, "Invalid JSON-RPC request.");
   }
@@ -159,12 +159,20 @@ export function registerYouTubeMcpRoutes(app: Express) {
     }
 
     const accept = req.header("accept") ?? "";
-    if (!accept.includes("application/json") && !accept.includes("text/event-stream")) {
+    if (!accept.includes("application/json")) {
       res.status(406).json({ error: "Accept must include application/json or text/event-stream." });
       return;
     }
 
-    const message = req.body as JsonRpcRequest;
+    if (!req.is("application/json")) {
+      res.status(415).json({ error: "Content-Type must be application/json." });
+      return;
+    }
+    const message = req.body as JsonRpcRequest | undefined;
+    if (!message || typeof message !== "object" || Array.isArray(message)) {
+      res.status(400).json({ error: "A JSON-RPC request body is required." });
+      return;
+    }
     const response = await handleJsonRpc(message);
     if (response === null) {
       res.status(202).end();
