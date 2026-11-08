@@ -13,13 +13,16 @@ describe("YouTube remote MCP JSON-RPC", () => {
     expect(response.result.capabilities.tools).toBeDefined();
   });
 
-  it("advertises only the two safe connection tools", async () => {
+  it("advertises the connection, channel and Analytics tools", async () => {
     const response = await handleJsonRpc({ jsonrpc: "2.0", id: 2, method: "tools/list" }) as {
       result: { tools: Array<{ name: string }> };
     };
     expect(response.result.tools.map((tool) => tool.name)).toEqual([
       "youtube_connection_status",
       "youtube_start_channel_connection",
+      "youtube_channel_summary",
+      "youtube_recent_videos",
+      "youtube_analytics_daily",
     ]);
   });
 
