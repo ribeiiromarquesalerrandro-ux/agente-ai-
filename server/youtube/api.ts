@@ -174,7 +174,7 @@ export async function publishApprovedYouTubeAssetPrivate(userId: number, assetId
   if (asset.status === "uploaded_private" && asset.youtubeVideoId) {
     return { videoId: asset.youtubeVideoId, url: `https://www.youtube.com/watch?v=${asset.youtubeVideoId}`, duplicate: true };
   }
-  if (asset.status !== "approved") throw new Error("The asset must be explicitly approved before upload.");
+  if (asset.status !== "approved" && !(asset.status === "uploading" && asset.encryptedUploadSessionUrl)) throw new Error("The asset must be explicitly approved before upload.");
   if (!asset.title || asset.title.length > 100) throw new Error("Approved video title is missing or invalid.");
   if (!asset.description || asset.description.length > 5000) throw new Error("Approved video description is missing or invalid.");
   const tags = asset.tagsJson ? JSON.parse(asset.tagsJson) as string[] : [];
