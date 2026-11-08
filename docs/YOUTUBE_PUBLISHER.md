@@ -1,6 +1,6 @@
 # YouTube Publisher — plano de integração
 
-Status: fundação documental e primeira etapa de OAuth implementadas na branch; upload, Analytics e publicação real continuam desativados.
+Status: documentação e fundação OAuth do backend implementadas na branch. O endpoint MCP remoto ainda não foi implementado; portanto, Claude ainda não consegue descobrir/chamar estas funções. Upload, Analytics e publicação real continuam desativados.
 
 ## Objetivo
 
@@ -121,4 +121,4 @@ O agendamento futuro deve ser uma etapa separada, com data/hora explícita e apr
 - Callback HTTPS em `/api/youtube/oauth/callback`.
 - Persistência do refresh token criptografado e metadados do canal em `youtube_connections`.
 - Endpoints tRPC `youtube.connect` e `youtube.status`, restritos ao perfil owner.
-- Nenhum upload é iniciado nesta etapa. O próximo bloco é implementar renovação de access token, recebimento seguro do MP4 e validação do manifesto/QA antes de qualquer upload.
+- Ainda não existe endpoint MCP remoto Streamable HTTP; os endpoints atuais são tRPC internos do Agente AI e não são conectáveis diretamente como MCP pelo Claude.\n- Nenhum upload é iniciado nesta etapa. Próximas etapas: implementar o endpoint MCP remoto autenticado, renovar access tokens, receber MP4 por streaming e validar manifesto/QA antes de qualquer upload.
