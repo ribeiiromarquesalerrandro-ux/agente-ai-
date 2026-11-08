@@ -67,7 +67,8 @@ Configuração necessária no ambiente de hospedagem do Agente AI:
 - `YOUTUBE_MCP_API_KEY` (credencial independente com pelo menos 32 bytes; Claude envia como `Authorization: Bearer <chave>`)
 - `YOUTUBE_PUBLISHING_ENABLED=false` inicialmente
 - `YOUTUBE_UPLOAD_VISIBILITY=private` inicialmente
-- `YOUTUBE_HANDOFF_SECRET` (segredo independente com pelo menos 32 bytes para autenticar o adaptador do motor)\n- `YOUTUBE_HANDOFF_MAX_BYTES` (opcional; limite máximo do MP4 em bytes, padrão 1 GiB)
+- `YOUTUBE_HANDOFF_SECRET` (segredo independente com pelo menos 32 bytes para autenticar o adaptador do motor)
+- `YOUTUBE_HANDOFF_MAX_BYTES` (opcional; limite máximo do MP4 em bytes, padrão 1 GiB)
 
 Solicitar os escopos OAuth `youtube.upload`, `youtube.readonly` e `yt-analytics.readonly`, necessários respectivamente para envio, identificação/leitura do canal e relatórios de Analytics. Implementar state assinado com expiração, callback HTTPS, armazenamento criptografado de refresh token, renovação de access token, rotação/revogação e logs sem tokens. A autorização deve ser feita pelo proprietário do canal no navegador; nunca pedir senha Google ao usuário.
 
@@ -111,7 +112,7 @@ O agendamento futuro deve ser uma etapa separada, com data/hora explícita e apr
 - Configurar tela de consentimento OAuth e URI de callback HTTPS do ambiente publicado.
 - Configurar os segredos acima no gerenciador de segredos do host (não no Git).
 - Definir o endpoint público HTTPS do Agente AI.
-- Implementar o adaptador de handoff no motor e testar transferência de um MP4 real.
+- Revisar e integrar a branch opcional do adaptador no repositório do motor; testar a transferência de um MP4 real.
 - Autorizar o canal correto e executar upload privado de teste.
 
 
@@ -124,9 +125,9 @@ O agendamento futuro deve ser uma etapa separada, com data/hora explícita e apr
 - Persistência do refresh token criptografado e metadados do canal em `youtube_connections`.
 - Endpoints tRPC `youtube.connect` e `youtube.status`, restritos ao perfil owner.
 - Endpoint MCP remoto stateless disponível em `POST /mcp/youtube`, protegido por bearer key.
-- Ferramentas MCP disponíveis: status da conexão, início de OAuth, resumo do canal, vídeos recentes e Analytics diário.
+- Ferramentas MCP disponíveis: status da conexão, início de OAuth, resumo do canal, vídeos recentes, Analytics diário, fila de vídeos recebidos, aprovação de metadados e upload privado aprovado.
 - Renovação do access token Google implementada no backend.
-- A migração Drizzle `0004_youtube_connections.sql` cria a tabela de credenciais criptografadas.
+- As migrações Drizzle `0004_youtube_connections.sql` e `0005_youtube_assets.sql` criam as tabelas de conexão e fila de vídeos.
 - Handoff autenticado, aprovação explícita do owner e upload privado resumível implementados na branch; ainda sem teste real de ponta a ponta.
 
 
@@ -148,7 +149,10 @@ Ferramentas disponíveis nesta etapa:
 - `youtube_start_channel_connection`: gera uma URL OAuth Google de curta duração para o owner autorizar o canal correto.
 - `youtube_channel_summary`: consulta nome, visualizações totais, inscritos e quantidade de vídeos.
 - `youtube_recent_videos`: lista os vídeos mais recentes do canal.
-- `youtube_analytics_daily`: consulta visualizações, minutos assistidos, duração média e inscritos ganhos por dia.\n- `youtube_list_pending_assets`: lista vídeos transferidos com QA PASS aguardando aprovação.\n- `youtube_approve_asset`: grava título, descrição e tags aprovados pelo owner, sem publicar.\n- `youtube_publish_approved_asset`: envia um vídeo previamente aprovado como privado, somente se `YOUTUBE_PUBLISHING_ENABLED=true` e `confirmPrivate=true`.
+- `youtube_analytics_daily`: consulta visualizações, minutos assistidos, duração média e inscritos ganhos por dia.
+- `youtube_list_pending_assets`: lista vídeos transferidos com QA PASS aguardando aprovação.
+- `youtube_approve_asset`: grava título, descrição e tags aprovados pelo owner, sem publicar.
+- `youtube_publish_approved_asset`: envia um vídeo previamente aprovado como privado, somente se `YOUTUBE_PUBLISHING_ENABLED=true` e `confirmPrivate=true`.
 
 O endpoint é stateless: não cria sessão MCP. Aceita requisições JSON-RPC por POST, retorna 202 para notificações e 405 para GET/DELETE. O cliente deve enviar `Accept: application/json, text/event-stream`; o servidor responde em JSON. As ferramentas de publicação só aceitam uploads privados.
 
