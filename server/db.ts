@@ -11,6 +11,7 @@ import {
   planModelAccess,
   users,
   youtubeConnections,
+  youtubeAssets,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -269,4 +270,78 @@ export async function getYouTubeConnectionWithCredentials(userId: number) {
   const db = await requireDb();
   const rows = await db.select().from(youtubeConnections).where(eq(youtubeConnections.userId, userId)).limit(1);
   return rows[0] ?? null;
+}
+
+
+export async function getYouTubeAssetById(id: number) {
+  const db = await requireDb();
+  const rows = await db.select().from(youtubeAssets).where(eq(youtubeAssets.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getYouTubeAssetByProductionId(productionId: string) {
+  const db = await requireDb();
+  const rows = await db.select().from(youtubeAssets).where(eq(youtubeAssets.productionId, productionId)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function createYouTubeAsset(input: {
+  productionId: string;
+  objectKey: string;
+  fileName: string;
+  fileSizeBytes: number;
+  sha256: string;
+  qaStatus: "PASS";
+}) {
+  const db = await requireDb();
+  await db.insert(youtubeAssets).values(input);
+  return getYouTubeAssetByProductionId(input.productionId);
+}
+
+export async function listYouTubeAssets(status?: "received" | "approved" | "uploading" | "uploaded_private" | "rejected" | "upload_failed") {
+  const db = await requireDb();
+  if (status) return db.select({
+    id: youtubeAssets.id,
+    productionId: youtubeAssets.productionId,
+    fileName: youtubeAssets.fileName,
+    fileSizeBytes: youtubeAssets.fileSizeBytes,
+    sha256: youtubeAssets.sha256,
+    qaStatus: youtubeAssets.qaStatus,
+    status: youtubeAssets.status,
+    title: youtubeAssets.title,
+    youtubeVideoId: youtubeAssets.youtubeVideoId,
+    createdAt: youtubeAssets.createdAt,
+    updatedAt: youtubeAssets.updatedAt,
+  }).from(youtubeAssets).where(eq(youtubeAssets.status, status));
+  return db.select({
+    id: youtubeAssets.id,
+    productionId: youtubeAssets.productionId,
+    fileName: youtubeAssets.fileName,
+    fileSizeBytes: youtubeAssets.fileSizeBytes,
+    sha256: youtubeAssets.sha256,
+    qaStatus: youtubeAssets.qaStatus,
+    status: youtubeAssets.status,
+    title: youtubeAssets.title,
+    youtubeVideoId: youtubeAssets.youtubeVideoId,
+    createdAt: youtubeAssets.createdAt,
+    updatedAt: youtubeAssets.updatedAt,
+  }).from(youtubeAssets);
+}
+
+export async function updateYouTubeAsset(
+  id: number,
+  update: Partial<{
+    status: "received" | "approved" | "uploading" | "uploaded_private" | "rejected" | "upload_failed";
+    title: string;
+    description: string;
+    tagsJson: string;
+    categoryId: string;
+    encryptedUploadSessionUrl: string | null;
+    youtubeVideoId: string | null;
+    approvedAt: Date | null;
+  }>,
+) {
+  const db = await requireDb();
+  await db.update(youtubeAssets).set({ ...update, updatedAt: new Date() }).where(eq(youtubeAssets.id, id));
+  return getYouTubeAssetById(id);
 }
