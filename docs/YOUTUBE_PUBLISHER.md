@@ -62,7 +62,8 @@ Configuração necessária no ambiente de hospedagem do Agente AI:
 - `YOUTUBE_CLIENT_ID`
 - `YOUTUBE_CLIENT_SECRET`
 - `YOUTUBE_REDIRECT_URI` (HTTPS, rota de callback do publisher)
-- `YOUTUBE_TOKEN_ENCRYPTION_KEY` (chave AES-256 em 64 caracteres hexadecimais, exclusiva do ambiente, para criptografia autenticada dos tokens persistidos)\n- `YOUTUBE_OAUTH_STATE_SECRET` (segredo independente com pelo menos 32 bytes para assinar o state OAuth)
+- `YOUTUBE_TOKEN_ENCRYPTION_KEY` (chave AES-256 em 64 caracteres hexadecimais, exclusiva do ambiente, para criptografia autenticada dos tokens persistidos)
+- `YOUTUBE_OAUTH_STATE_SECRET` (segredo independente com pelo menos 32 bytes para assinar o state OAuth)
 - `YOUTUBE_MCP_API_KEY` (credencial independente com pelo menos 32 bytes; Claude envia como `Authorization: Bearer <chave>`)
 - `YOUTUBE_PUBLISHING_ENABLED=false` inicialmente
 - `YOUTUBE_UPLOAD_VISIBILITY=private` inicialmente
@@ -122,7 +123,11 @@ O agendamento futuro deve ser uma etapa separada, com data/hora explícita e apr
 - Callback HTTPS em `/api/youtube/oauth/callback`.
 - Persistência do refresh token criptografado e metadados do canal em `youtube_connections`.
 - Endpoints tRPC `youtube.connect` e `youtube.status`, restritos ao perfil owner.
-- Endpoint MCP remoto stateless disponível em `POST /mcp/youtube`, protegido por bearer key.\n- Ferramentas MCP disponíveis: status da conexão, início de OAuth, resumo do canal, vídeos recentes e Analytics diário.\n- Renovação do access token Google implementada no backend.\n- A migração Drizzle `0004_youtube_connections.sql` cria a tabela de credenciais criptografadas.\n- Handoff do motor, aprovação de ativos e upload resumível ainda não foram implementados.
+- Endpoint MCP remoto stateless disponível em `POST /mcp/youtube`, protegido por bearer key.
+- Ferramentas MCP disponíveis: status da conexão, início de OAuth, resumo do canal, vídeos recentes e Analytics diário.
+- Renovação do access token Google implementada no backend.
+- A migração Drizzle `0004_youtube_connections.sql` cria a tabela de credenciais criptografadas.
+- Handoff do motor, aprovação de ativos e upload resumível ainda não foram implementados.
 
 
 ## MCP remoto
@@ -141,6 +146,9 @@ Ferramentas disponíveis nesta etapa:
 
 - `youtube_connection_status`: consulta se o canal do owner está conectado e retorna apenas metadados não secretos.
 - `youtube_start_channel_connection`: gera uma URL OAuth Google de curta duração para o owner autorizar o canal correto.
+- `youtube_channel_summary`: consulta nome, visualizações totais, inscritos e quantidade de vídeos.
+- `youtube_recent_videos`: lista os vídeos mais recentes do canal.
+- `youtube_analytics_daily`: consulta visualizações, minutos assistidos, duração média e inscritos ganhos por dia.
 
 O endpoint é stateless: não cria sessão MCP. Aceita requisições JSON-RPC por POST, retorna 202 para notificações e 405 para GET/DELETE. O cliente deve enviar `Accept: application/json, text/event-stream`; o servidor responde em JSON.
 
