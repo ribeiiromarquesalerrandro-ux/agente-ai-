@@ -1,4 +1,4 @@
-import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { bigint, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /** Core account table provided by the authentication template. */
 export const users = mysqlTable("users", {
@@ -76,6 +76,39 @@ export const apiCatalogSettings = mysqlTable("api_catalog_settings", {
   credentialReference: varchar("credentialReference", { length: 128 }),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
+
+export const youtubeConnections = mysqlTable("youtube_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  channelId: varchar("channelId", { length: 128 }).notNull(),
+  channelTitle: text("channelTitle").notNull(),
+  encryptedRefreshToken: text("encryptedRefreshToken").notNull(),
+  grantedScopes: text("grantedScopes").notNull(),
+  connectedAt: timestamp("connectedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const youtubeAssets = mysqlTable("youtube_assets", {
+  id: int("id").autoincrement().primaryKey(),
+  productionId: varchar("productionId", { length: 160 }).notNull().unique(),
+  objectKey: varchar("objectKey", { length: 512 }).notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileSizeBytes: bigint("fileSizeBytes", { mode: "number" }).notNull(),
+  sha256: varchar("sha256", { length: 64 }).notNull(),
+  qaStatus: mysqlEnum("qaStatus", ["PASS"]).notNull().default("PASS"),
+  status: mysqlEnum("status", ["received", "approved", "uploading", "uploaded_private", "rejected", "upload_failed"]).notNull().default("received"),
+  title: varchar("title", { length: 100 }),
+  description: text("description"),
+  tagsJson: text("tagsJson"),
+  categoryId: varchar("categoryId", { length: 16 }).default("22"),
+  encryptedUploadSessionUrl: text("encryptedUploadSessionUrl"),
+  youtubeVideoId: varchar("youtubeVideoId", { length: 128 }),
+  approvedAt: timestamp("approvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  index("youtube_assets_status_created_idx").on(table.status, table.createdAt),
+]);
 
 export const planModelAccess = mysqlTable("plan_model_access", {
   id: int("id").autoincrement().primaryKey(),
