@@ -1,10 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import type { Express, Request, Response } from "express";
-import { getUserByOpenId, getYouTubeConnection } from "../db";
+import { getUserByOpenId, getYouTubeConnection, getYouTubeAssetById, listYouTubeAssets, updateYouTubeAsset } from "../db";
 import { ENV } from "../_core/env";
 import { buildYouTubeAuthorizationUrl } from "./oauth";
 import { createYouTubeOAuthState } from "./security";
-import { getYouTubeAnalytics, getYouTubeChannelSummary, getYouTubeRecentVideos } from "./api";
+import { getYouTubeAnalytics, getYouTubeChannelSummary, getYouTubeRecentVideos, publishApprovedYouTubeAssetPrivate } from "./api";
 
 const MCP_PROTOCOL_VERSIONS = new Set(["2025-03-26", "2025-06-18"]);
 const MCP_SERVER_INFO = {
@@ -96,6 +96,43 @@ const TOOL_DEFINITIONS = [
       additionalProperties: false,
     },
   },
+  {
+    name: "youtube_list_pending_assets",
+    title: "List pending production videos",
+    description: "Lists finished videos received from the production engine with QA PASS that are awaiting owner approval.",
+    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+  },
+  {
+    name: "youtube_approve_asset",
+    title: "Approve a video for private upload",
+    description: "Stores the owner's approved title, description and tags for one QA-passed asset. This does not upload the video.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        assetId: { type: "integer", minimum: 1 },
+        title: { type: "string", minLength: 1, maxLength: 100 },
+        description: { type: "string", maxLength: 5000 },
+        tags: { type: "array", items: { type: "string", maxLength: 100 }, maxItems: 500 },
+        categoryId: { type: "string", pattern: "^[0-9]{1,3}$" },
+      },
+      required: ["assetId", "title", "description"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "youtube_publish_approved_asset",
+    title: "Upload approved video privately",
+    description: "Uploads an already approved asset to YouTube with privacyStatus=private. Requires confirmPrivate=true and YOUTUBE_PUBLISHING_ENABLED=true. Never publishes publicly or schedules.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        assetId: { type: "integer", minimum: 1 },
+        confirmPrivate: { type: "boolean" },
+      },
+      required: ["assetId", "confirmPrivate"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 async function callTool(name: string, args: Record<string, unknown> = {}) {
@@ -137,6 +174,44 @@ async function callTool(name: string, args: Record<string, unknown> = {}) {
     }
     return toolText(JSON.stringify(await getYouTubeAnalytics(owner.id, args.startDate, args.endDate)));
   }
+  if (name === "youtube_list_pending_assets") {
+    const assets = await listYouTubeAssets("received");
+    return toolText(JSON.stringify(assets));
+  }
+  if (name === "youtube_approve_asset") {
+    const assetId = args.assetId;
+    const title = args.title;
+    const description = args.description;
+    const tags = args.tags === undefined ? [] : args.tags;
+    const categoryId = args.categoryId === undefined ? "22" : args.categoryId;
+    if (typeof assetId !== "number" || !Number.isSafeInteger(assetId) || assetId <= 0 ||
+        typeof title !== "string" || title.trim().length === 0 || title.length > 100 ||
+        typeof description !== "string" || description.length > 5000 ||
+        !Array.isArray(tags) || tags.length > 500 ||
+        tags.some((tag) => typeof tag !== "string" || tag.length > 100) ||
+        typeof categoryId !== "string" || !/^[0-9]{1,3}$/.test(categoryId)) {
+      throw new Error("Invalid approval metadata.");
+    }
+    const asset = await getYouTubeAssetById(assetId);
+    if (!asset || asset.status !== "received" || asset.qaStatus !== "PASS") {
+      throw new Error("Only a received asset with QA PASS can be approved.");
+    }
+    const approved = await updateYouTubeAsset(assetId, {
+      status: "approved",
+      title: title.trim(),
+      description,
+      tagsJson: JSON.stringify(tags),
+      categoryId,
+      approvedAt: new Date(),
+    });
+    return toolText(JSON.stringify({ approved: true, assetId, status: approved?.status, privacy: "private" }));
+  }
+  if (name === "youtube_publish_approved_asset") {
+    if (typeof args.assetId !== "number" || !Number.isSafeInteger(args.assetId) || args.assetId <= 0 || args.confirmPrivate !== true) {
+      throw new Error("Provide a valid assetId and confirmPrivate=true to start a private upload.");
+    }
+    return toolText(JSON.stringify(await publishApprovedYouTubeAssetPrivate(owner.id, args.assetId)));
+  }
   throw new Error("Unknown YouTube MCP tool.");
 }
 
@@ -159,7 +234,7 @@ export async function handleJsonRpc(message: JsonRpcRequest) {
       protocolVersion,
       capabilities: { tools: { listChanged: false } },
       serverInfo: MCP_SERVER_INFO,
-      instructions: "YouTube connection, channel summary, recent video and daily Analytics tools. Uploading and publishing tools are not enabled.",
+      instructions: "YouTube connection, channel summary, recent video, Analytics, production handoff review and explicitly approved private uploads. Public publishing and scheduling are not supported.",
     });
   }
 
