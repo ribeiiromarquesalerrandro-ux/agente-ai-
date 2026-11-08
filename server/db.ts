@@ -10,6 +10,7 @@ import {
   memoryEntries,
   planModelAccess,
   users,
+  youtubeConnections,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -227,4 +228,38 @@ export async function updateUserAccess(userId: number, role: "admin" | "user", p
   await db.update(users).set({ role, plan }).where(eq(users.id, userId));
   const updated = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return updated[0];
+}
+
+
+export async function getYouTubeConnection(userId: number) {
+  const db = await requireDb();
+  const rows = await db.select({
+    id: youtubeConnections.id,
+    channelId: youtubeConnections.channelId,
+    channelTitle: youtubeConnections.channelTitle,
+    grantedScopes: youtubeConnections.grantedScopes,
+    connectedAt: youtubeConnections.connectedAt,
+    updatedAt: youtubeConnections.updatedAt,
+  }).from(youtubeConnections).where(eq(youtubeConnections.userId, userId)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function saveYouTubeConnection(input: {
+  userId: number;
+  channelId: string;
+  channelTitle: string;
+  encryptedRefreshToken: string;
+  grantedScopes: string;
+}) {
+  const db = await requireDb();
+  await db.insert(youtubeConnections).values(input).onDuplicateKeyUpdate({
+    set: {
+      channelId: input.channelId,
+      channelTitle: input.channelTitle,
+      encryptedRefreshToken: input.encryptedRefreshToken,
+      grantedScopes: input.grantedScopes,
+      updatedAt: new Date(),
+    },
+  });
+  return getYouTubeConnection(input.userId);
 }
