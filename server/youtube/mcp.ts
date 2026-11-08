@@ -6,7 +6,7 @@ import { buildYouTubeAuthorizationUrl } from "./oauth";
 import { createYouTubeOAuthState } from "./security";
 import { getYouTubeAnalytics, getYouTubeChannelSummary, getYouTubeRecentVideos } from "./api";
 
-const MCP_PROTOCOL_VERSIONS = new Set(["2025-03-26", "2025-06-18", "2025-11-25"]);
+const MCP_PROTOCOL_VERSIONS = new Set(["2025-03-26", "2025-06-18"]);
 const MCP_SERVER_INFO = {
   name: "agente-ai-youtube",
   title: "Agente AI — YouTube",
@@ -217,12 +217,21 @@ export function registerYouTubeMcpRoutes(app: Express) {
       res.status(400).json({ error: "A JSON-RPC request body is required." });
       return;
     }
+    const headerVersion = req.header("MCP-Protocol-Version");
+    if (headerVersion && !MCP_PROTOCOL_VERSIONS.has(headerVersion)) {
+      res.status(400).json({ error: "Unsupported MCP-Protocol-Version header." });
+      return;
+    }
+    const bodyVersion = message.method === "initialize" && typeof message.params?.protocolVersion === "string"
+      ? message.params.protocolVersion
+      : undefined;
+    const negotiatedVersion = headerVersion ?? (bodyVersion && MCP_PROTOCOL_VERSIONS.has(bodyVersion) ? bodyVersion : "2025-03-26");
+    res.setHeader("MCP-Protocol-Version", negotiatedVersion);
     const response = await handleJsonRpc(message);
     if (response === null) {
       res.status(202).end();
       return;
     }
-    res.setHeader("MCP-Protocol-Version", typeof message.params?.protocolVersion === "string" && MCP_PROTOCOL_VERSIONS.has(message.params.protocolVersion) ? message.params.protocolVersion : "2025-03-26");
     res.status(200).type("application/json").send(response);
   });
 
