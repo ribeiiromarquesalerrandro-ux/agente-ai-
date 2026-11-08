@@ -1,6 +1,6 @@
 # YouTube Publisher — plano de integração
 
-Status: fundação documental; implementação e publicação real ainda desativadas.
+Status: fundação documental e primeira etapa de OAuth implementadas na branch; upload, Analytics e publicação real continuam desativados.
 
 ## Objetivo
 
@@ -62,12 +62,12 @@ Configuração necessária no ambiente de hospedagem do Agente AI:
 - `YOUTUBE_CLIENT_ID`
 - `YOUTUBE_CLIENT_SECRET`
 - `YOUTUBE_REDIRECT_URI` (HTTPS, rota de callback do publisher)
-- `YOUTUBE_TOKEN_ENCRYPTION_KEY` (chave forte, exclusiva do ambiente, para criptografia autenticada dos tokens persistidos)
+- `YOUTUBE_TOKEN_ENCRYPTION_KEY` (chave AES-256 em 64 caracteres hexadecimais, exclusiva do ambiente, para criptografia autenticada dos tokens persistidos)\n- `YOUTUBE_OAUTH_STATE_SECRET` (segredo independente com pelo menos 32 bytes para assinar o state OAuth)
 - `YOUTUBE_PUBLISHING_ENABLED=false` inicialmente
 - `YOUTUBE_UPLOAD_VISIBILITY=private` inicialmente
 - `YOUTUBE_HANDOFF_SECRET` (segredo independente para autenticar o motor)
 
-Solicitar apenas o escopo OAuth `https://www.googleapis.com/auth/youtube.upload`. Implementar state anti-CSRF, callback HTTPS, armazenamento criptografado de refresh token, renovação de access token, rotação/revogação e logs sem tokens. A autorização deve ser feita pelo proprietário do canal no navegador; nunca pedir senha Google ao usuário.
+Solicitar os escopos OAuth `youtube.upload`, `youtube.readonly` e `yt-analytics.readonly`, necessários respectivamente para envio, identificação/leitura do canal e relatórios de Analytics. Implementar state assinado com expiração, callback HTTPS, armazenamento criptografado de refresh token, renovação de access token, rotação/revogação e logs sem tokens. A autorização deve ser feita pelo proprietário do canal no navegador; nunca pedir senha Google ao usuário.
 
 O projeto Google Cloud deve ter YouTube Data API v3 habilitada e OAuth consent screen configurada. Projetos não verificados podem ter restrições de visibilidade; por isso o fluxo inicial deve aceitar a resposta efetiva da API e nunca prometer publicação pública antes da verificação.
 
@@ -111,3 +111,14 @@ O agendamento futuro deve ser uma etapa separada, com data/hora explícita e apr
 - Definir o endpoint público HTTPS do Agente AI.
 - Implementar o adaptador de handoff no motor e testar transferência de um MP4 real.
 - Autorizar o canal correto e executar upload privado de teste.
+
+
+## Implementação atual na branch
+
+- Helpers de criptografia AES-256-GCM para refresh tokens e assinatura/validação de state OAuth com expiração.
+- Configuração e geração do URL de consentimento Google OAuth.
+- Troca do authorization code e consulta do canal autorizado.
+- Callback HTTPS em `/api/youtube/oauth/callback`.
+- Persistência do refresh token criptografado e metadados do canal em `youtube_connections`.
+- Endpoints tRPC `youtube.connect` e `youtube.status`, restritos ao perfil owner.
+- Nenhum upload é iniciado nesta etapa. O próximo bloco é implementar renovação de access token, recebimento seguro do MP4 e validação do manifesto/QA antes de qualquer upload.
