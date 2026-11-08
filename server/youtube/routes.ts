@@ -37,7 +37,7 @@ export function registerYouTubeRoutes(app: Express) {
         channelId: channel.channelId,
         channelTitle: channel.channelTitle,
         encryptedRefreshToken: encryptYouTubeToken(tokens.refresh_token),
-        grantedScopes: tokens.scope ?? "https://www.googleapis.com/auth/youtube.upload",
+        grantedScopes: tokens.scope ?? "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly",
       });
 
       res.redirect(302, "/?youtube=connected");
