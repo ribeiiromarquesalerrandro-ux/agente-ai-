@@ -23,6 +23,9 @@ describe("YouTube remote MCP JSON-RPC", () => {
       "youtube_channel_summary",
       "youtube_recent_videos",
       "youtube_analytics_daily",
+      "youtube_list_pending_assets",
+      "youtube_approve_asset",
+      "youtube_publish_approved_asset",
     ]);
   });
 
