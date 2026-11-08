@@ -31,7 +31,7 @@ export function buildYouTubeAuthorizationUrl(state: string): string {
     client_id: env.YOUTUBE_CLIENT_ID,
     redirect_uri: env.YOUTUBE_REDIRECT_URI,
     response_type: "code",
-    scope: "https://www.googleapis.com/auth/youtube.upload",
+    scope: "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly",
     access_type: "offline",
     prompt: "consent",
     include_granted_scopes: "true",
