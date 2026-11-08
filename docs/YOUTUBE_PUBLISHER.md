@@ -1,6 +1,6 @@
 # YouTube Publisher — plano de integração
 
-Status: OAuth, endpoint MCP remoto, leitura do canal e consultas de Analytics implementados na branch. Publicação, handoff do motor e deploy de produção continuam pendentes.
+Status: OAuth, MCP remoto, leitura do canal, Analytics, handoff autenticado do motor, fila de aprovação e upload resumível privado estão implementados na branch. Ainda faltam execução de CI aprovada, configuração dos segredos, deploy público, conexão real do canal e teste de ponta a ponta.
 
 ## Objetivo
 
@@ -35,7 +35,7 @@ motor de vídeo
 
 O motor atualmente grava o MP4 em `fila/concluidos/<id>/final/<id>.mp4`, junto com `capa.jpg` e `qa/qa.md`. Esses arquivos ficam no ambiente do motor e não são automaticamente acessíveis ao servidor Agente AI.
 
-O adaptador do motor deverá enviar o arquivo final e um manifesto para um endpoint autenticado do Agente AI. O contrato mínimo do manifesto:
+O adaptador opcional em `integrations/youtube-publisher/handoff.py` no repositório do motor envia o arquivo final e um manifesto para os endpoints autenticados do Agente AI. Ele fica em uma branch separada e não altera o orquestrador, a fila nem as oito skills. O contrato mínimo do manifesto:
 
 ```json
 {
@@ -51,7 +51,7 @@ O adaptador do motor deverá enviar o arquivo final e um manifesto para um endpo
 }
 ```
 
-O servidor deverá verificar autenticação, tamanho máximo configurado, MIME type, extensão, SHA-256 e resultado de QA antes de aceitar o ativo. O transporte definitivo precisa suportar arquivos grandes; não se deve elevar o limite JSON de 50 MB nem enviar MP4 em JSON/base64. Preferir upload binário/multipart em streaming ou URL de upload temporária com expiração curta.
+O servidor verifica autenticação, tamanho máximo configurado, MIME type, extensão, SHA-256 e resultado de QA antes de aceitar o ativo. O upload do MP4 é feito diretamente para armazenamento temporário por URL assinada; o servidor confere novamente tamanho e SHA-256 antes de registrar o ativo. O transporte definitivo precisa suportar arquivos grandes; não se deve elevar o limite JSON de 50 MB nem enviar MP4 em JSON/base64. Preferir upload binário/multipart em streaming ou URL de upload temporária com expiração curta.
 
 O caminho local do motor não deve ser presumido como caminho local do servidor Agente AI. O adaptador deve enviar o arquivo ou colocá-lo em armazenamento compartilhado autorizado.
 
@@ -67,7 +67,7 @@ Configuração necessária no ambiente de hospedagem do Agente AI:
 - `YOUTUBE_MCP_API_KEY` (credencial independente com pelo menos 32 bytes; Claude envia como `Authorization: Bearer <chave>`)
 - `YOUTUBE_PUBLISHING_ENABLED=false` inicialmente
 - `YOUTUBE_UPLOAD_VISIBILITY=private` inicialmente
-- `YOUTUBE_HANDOFF_SECRET` (segredo independente para autenticar o motor)
+- `YOUTUBE_HANDOFF_SECRET` (segredo independente com pelo menos 32 bytes para autenticar o adaptador do motor)\n- `YOUTUBE_HANDOFF_MAX_BYTES` (opcional; limite máximo do MP4 em bytes, padrão 1 GiB)
 
 Solicitar os escopos OAuth `youtube.upload`, `youtube.readonly` e `yt-analytics.readonly`, necessários respectivamente para envio, identificação/leitura do canal e relatórios de Analytics. Implementar state assinado com expiração, callback HTTPS, armazenamento criptografado de refresh token, renovação de access token, rotação/revogação e logs sem tokens. A autorização deve ser feita pelo proprietário do canal no navegador; nunca pedir senha Google ao usuário.
 
@@ -75,14 +75,14 @@ O projeto Google Cloud deve ter YouTube Data API v3 habilitada e OAuth consent s
 
 ## Upload e publicação
 
-- Usar YouTube Data API v3 `videos.insert` com protocolo de upload resumível.
+- Implementado no backend: YouTube Data API v3 `videos.insert` com protocolo de upload resumível e blocos de 8 MiB.
 - Validar título, descrição, tags e categoria antes do envio.
 - Metadados e título/descrição em inglês.
 - Definir `snippet.defaultLanguage = "en"`.
-- Definir `status.privacyStatus = "private"` por padrão.
+- Implementado e obrigatório: `status.privacyStatus = "private"`. Não há ferramenta para publicar publicamente nem agendar.
 - Não agendar nem publicar publicamente sem uma aprovação explícita registrada para aquele vídeo.
-- Persistir identificador de produção, hash, estado do upload, YouTube video ID, URL, visibilidade e timestamps.
-- Implementar idempotência para evitar upload duplicado após timeout/retry.
+- Implementado: persistência do identificador de produção, hash, estado, YouTube video ID e timestamps.
+- Implementado: handoff idempotente por productionId + hash e retomada da sessão resumível do YouTube após interrupções.
 - Consultar o estado remoto antes de repetir uma operação cujo resultado seja incerto.
 
 ## Estados sugeridos
@@ -127,7 +127,7 @@ O agendamento futuro deve ser uma etapa separada, com data/hora explícita e apr
 - Ferramentas MCP disponíveis: status da conexão, início de OAuth, resumo do canal, vídeos recentes e Analytics diário.
 - Renovação do access token Google implementada no backend.
 - A migração Drizzle `0004_youtube_connections.sql` cria a tabela de credenciais criptografadas.
-- Handoff do motor, aprovação de ativos e upload resumível ainda não foram implementados.
+- Handoff autenticado, aprovação explícita do owner e upload privado resumível implementados na branch; ainda sem teste real de ponta a ponta.
 
 
 ## MCP remoto
@@ -148,9 +148,9 @@ Ferramentas disponíveis nesta etapa:
 - `youtube_start_channel_connection`: gera uma URL OAuth Google de curta duração para o owner autorizar o canal correto.
 - `youtube_channel_summary`: consulta nome, visualizações totais, inscritos e quantidade de vídeos.
 - `youtube_recent_videos`: lista os vídeos mais recentes do canal.
-- `youtube_analytics_daily`: consulta visualizações, minutos assistidos, duração média e inscritos ganhos por dia.
+- `youtube_analytics_daily`: consulta visualizações, minutos assistidos, duração média e inscritos ganhos por dia.\n- `youtube_list_pending_assets`: lista vídeos transferidos com QA PASS aguardando aprovação.\n- `youtube_approve_asset`: grava título, descrição e tags aprovados pelo owner, sem publicar.\n- `youtube_publish_approved_asset`: envia um vídeo previamente aprovado como privado, somente se `YOUTUBE_PUBLISHING_ENABLED=true` e `confirmPrivate=true`.
 
-O endpoint é stateless: não cria sessão MCP. Aceita requisições JSON-RPC por POST, retorna 202 para notificações e 405 para GET/DELETE. O cliente deve enviar `Accept: application/json, text/event-stream`; o servidor responde em JSON.
+O endpoint é stateless: não cria sessão MCP. Aceita requisições JSON-RPC por POST, retorna 202 para notificações e 405 para GET/DELETE. O cliente deve enviar `Accept: application/json, text/event-stream`; o servidor responde em JSON. As ferramentas de publicação só aceitam uploads privados.
 
 ### Configuração do Claude
 
