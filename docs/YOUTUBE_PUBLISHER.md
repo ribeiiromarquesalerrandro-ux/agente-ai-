@@ -1,6 +1,6 @@
 # YouTube Publisher — plano de integração
 
-Status: OAuth, MCP remoto, leitura do canal, Analytics, handoff autenticado do motor, fila de aprovação e upload resumível privado estão implementados na branch. Ainda faltam execução de CI aprovada, configuração dos segredos, deploy público, conexão real do canal e teste de ponta a ponta.
+Status: OAuth, MCP remoto, leitura do canal, Analytics, handoff autenticado do motor, fila de aprovação e upload resumível privado estão implementados na branch. CI de TypeScript, testes unitários e build passaram. Ainda faltam corrigir/confirmar a implantação Vercel, configurar os segredos, conectar o canal e executar teste de ponta a ponta.
 
 ## Objetivo
 
@@ -66,9 +66,8 @@ Configuração necessária no ambiente de hospedagem do Agente AI:
 - `YOUTUBE_OAUTH_STATE_SECRET` (segredo independente com pelo menos 32 bytes para assinar o state OAuth)
 - `YOUTUBE_MCP_API_KEY` (credencial independente com pelo menos 32 bytes; Claude envia como `Authorization: Bearer <chave>`)
 - `YOUTUBE_PUBLISHING_ENABLED=false` inicialmente
-- `YOUTUBE_UPLOAD_VISIBILITY=private` inicialmente
 - `YOUTUBE_HANDOFF_SECRET` (segredo independente com pelo menos 32 bytes para autenticar o adaptador do motor)
-- `YOUTUBE_HANDOFF_MAX_BYTES` (opcional; limite máximo do MP4 em bytes, padrão 1 GiB)
+- `YOUTUBE_HANDOFF_MAX_BYTES` (opcional; limite máximo do MP4 em bytes, padrão 1 GiB)\n- `OWNER_OPEN_ID` (identificador da conta owner já utilizado pelo Agente AI)\n- `DATABASE_URL` e as demais variáveis obrigatórias do Agente AI, incluindo `JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, `BUILT_IN_FORGE_API_URL` e `BUILT_IN_FORGE_API_KEY` quando o armazenamento Forge estiver sendo usado.
 
 Solicitar os escopos OAuth `youtube.upload`, `youtube.readonly` e `yt-analytics.readonly`, necessários respectivamente para envio, identificação/leitura do canal e relatórios de Analytics. Implementar state assinado com expiração, callback HTTPS, armazenamento criptografado de refresh token, renovação de access token, rotação/revogação e logs sem tokens. A autorização deve ser feita pelo proprietário do canal no navegador; nunca pedir senha Google ao usuário.
 
