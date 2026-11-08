@@ -24,7 +24,7 @@ function isHandoffAuthorized(req: Request): boolean {
   return Buffer.byteLength(secret, "utf8") >= 32 && supplied.length > 0 && safeEqual(secret, supplied);
 }
 
-function parseManifest(body: unknown): HandoffManifest | null {
+export function parseHandoffManifest(body: unknown): HandoffManifest | null {
   if (!body || typeof body !== "object" || Array.isArray(body)) return null;
   const value = body as Record<string, unknown>;
   if (typeof value.productionId !== "string" || !/^[A-Za-z0-9_-]{1,160}$/.test(value.productionId)) return null;
@@ -96,7 +96,7 @@ export function registerYouTubeHandoffRoutes(app: Express) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
-    const manifest = parseManifest(req.body);
+    const manifest = parseHandoffManifest(req.body);
     if (!manifest) {
       res.status(400).json({ error: "Manifest invalid. Require productionId, matching MP4 filename, positive size, SHA-256 and QA PASS." });
       return;
