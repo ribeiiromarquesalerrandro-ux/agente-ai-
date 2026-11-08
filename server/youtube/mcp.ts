@@ -6,7 +6,7 @@ import { buildYouTubeAuthorizationUrl } from "./oauth";
 import { createYouTubeOAuthState } from "./security";
 import { getYouTubeAnalytics, getYouTubeChannelSummary, getYouTubeRecentVideos } from "./api";
 
-const MCP_PROTOCOL_VERSIONS = new Set(["2025-03-26", "2025-06-18"]);
+const MCP_PROTOCOL_VERSIONS = new Set(["2025-03-26", "2025-06-18", "2025-11-25"]);
 const MCP_SERVER_INFO = {
   name: "agente-ai-youtube",
   title: "Agente AI — YouTube",
@@ -203,8 +203,8 @@ export function registerYouTubeMcpRoutes(app: Express) {
     }
 
     const accept = req.header("accept") ?? "";
-    if (!accept.includes("application/json")) {
-      res.status(406).json({ error: "Accept must include application/json or text/event-stream." });
+    if (!accept.includes("application/json") || !accept.includes("text/event-stream")) {
+      res.status(406).json({ error: "Accept must include both application/json and text/event-stream." });
       return;
     }
 
@@ -222,6 +222,7 @@ export function registerYouTubeMcpRoutes(app: Express) {
       res.status(202).end();
       return;
     }
+    res.setHeader("MCP-Protocol-Version", "2025-03-26");
     res.status(200).type("application/json").send(response);
   });
 
