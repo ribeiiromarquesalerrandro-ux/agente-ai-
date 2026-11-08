@@ -24,7 +24,7 @@ motor de vídeo
 
 - Não modificar as oito skills nem o orquestrador de produção.
 - Não habilitar publicação pública automática.
-- Primeiro destino obrigatório: `private`; só permitir `unlisted` em teste explicitamente aprovado.
+- Único destino implementado: `private`. Não há suporte a `unlisted` ou `public` nesta versão.
 - Agendamento deve permanecer inativo até o fluxo privado ser validado.
 - Não oferecer exclusão de vídeos nem solicitar escopo de exclusão.
 - O idioma padrão dos metadados será inglês: `snippet.defaultLanguage = "en"`.
@@ -35,7 +35,7 @@ motor de vídeo
 
 O motor atualmente grava o MP4 em `fila/concluidos/<id>/final/<id>.mp4`, junto com `capa.jpg` e `qa/qa.md`. Esses arquivos ficam no ambiente do motor e não são automaticamente acessíveis ao servidor Agente AI.
 
-O adaptador opcional em `integrations/youtube-publisher/handoff.py` no repositório do motor envia o arquivo final e um manifesto para os endpoints autenticados do Agente AI. Ele fica em uma branch separada e não altera o orquestrador, a fila nem as oito skills. O contrato mínimo do manifesto:
+O adaptador opcional em `integrations/youtube-publisher/handoff.py` (branch `feature/youtube-publisher-handoff`) no repositório do motor envia o arquivo final e um manifesto para os endpoints autenticados do Agente AI. Ele fica em uma branch separada e não altera o orquestrador, a fila nem as oito skills. O contrato mínimo do manifesto:
 
 ```json
 {
@@ -88,9 +88,9 @@ O projeto Google Cloud deve ter YouTube Data API v3 habilitada e OAuth consent s
 
 ## Estados sugeridos
 
-`received → validating → awaiting_approval → uploading → uploaded_private`
+`received → approved → uploading → uploaded_private`
 
-Estados de falha: `rejected`, `upload_failed_retryable`, `upload_failed_final`.
+Estados adicionais no modelo: `rejected`, `upload_failed`. A sessão resumível criptografada permite retomar tentativas que ficaram em `uploading`.
 
 O agendamento futuro deve ser uma etapa separada, com data/hora explícita e aprovação independente. Não ativar scheduler até que o upload privado tenha testes de integração concluídos.
 
@@ -135,7 +135,7 @@ O agendamento futuro deve ser uma etapa separada, com data/hora explícita e apr
 
 Endpoint: `POST https://<dominio-publico>/mcp/youtube`
 
-O servidor usa MCP Streamable HTTP stateless e responde em JSON. O conector Claude deve enviar o cabeçalho:
+O servidor usa MCP Streamable HTTP stateless e responde em JSON. O handoff do motor usa `POST /api/youtube/handoff/prepare` e `POST /api/youtube/handoff/complete`, ambos protegidos por `YOUTUBE_HANDOFF_SECRET`. O conector Claude deve enviar o cabeçalho:
 
 ```http
 Authorization: Bearer <YOUTUBE_MCP_API_KEY>
@@ -159,10 +159,10 @@ O endpoint é stateless: não cria sessão MCP. Aceita requisições JSON-RPC po
 ### Configuração do Claude
 
 1. Publique a aplicação em um domínio HTTPS acessível pela internet.
-2. Configure os segredos de produção no host, inclusive `YOUTUBE_MCP_API_KEY`.
-3. No Claude, abra Personalizar → Conectores → Adicionar → Personalizado → Web.
-4. Informe a URL `https://<dominio-publico>/mcp/youtube`.
-5. Em Request headers, adicione `Authorization` com valor `Bearer <YOUTUBE_MCP_API_KEY>`.
-6. Habilite o conector e teste primeiro `youtube_connection_status`.
+2. Configure os segredos de produção no host: credenciais OAuth, `YOUTUBE_TOKEN_ENCRYPTION_KEY`, `YOUTUBE_OAUTH_STATE_SECRET`, `YOUTUBE_MCP_API_KEY`, `YOUTUBE_HANDOFF_SECRET` e as credenciais de armazenamento já usadas pelo projeto. Deixe `YOUTUBE_PUBLISHING_ENABLED=false` até completar os testes.
+3. Configure o repositório do motor usando a branch `feature/youtube-publisher-handoff`; revise o PR antes de qualquer merge.\n4. No Claude, abra Personalizar → Conectores → Adicionar → Personalizado → Web.
+5. Informe a URL `https://<dominio-publico>/mcp/youtube`.
+6. Em Request headers, adicione `Authorization` com valor `Bearer <YOUTUBE_MCP_API_KEY>`.
+7. Habilite o conector e teste primeiro `youtube_connection_status`.
 
 O conector remoto é acessado pela infraestrutura da Anthropic, portanto localhost, endereço privado ou servidor sem HTTPS público não funcionam.
