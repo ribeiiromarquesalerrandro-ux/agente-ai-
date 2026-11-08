@@ -263,3 +263,10 @@ export async function saveYouTubeConnection(input: {
   });
   return getYouTubeConnection(input.userId);
 }
+
+
+export async function getYouTubeConnectionWithCredentials(userId: number) {
+  const db = await requireDb();
+  const rows = await db.select().from(youtubeConnections).where(eq(youtubeConnections.userId, userId)).limit(1);
+  return rows[0] ?? null;
+}
