@@ -104,7 +104,11 @@ export function registerYouTubeHandoffRoutes(app: Express) {
     try {
       const existing = await getYouTubeAssetByProductionId(manifest.productionId);
       if (existing) {
-        res.status(409).json({ error: "This production ID has already been handed off.", assetId: existing.id });
+        if (existing.sha256 !== manifest.sha256 || existing.fileSizeBytes !== manifest.fileSizeBytes) {
+          res.status(409).json({ error: "Production ID already exists with different file contents." });
+          return;
+        }
+        res.status(200).json({ duplicate: true, accepted: true, assetId: existing.id, status: existing.status });
         return;
       }
       const objectKey = `youtube-handoff/${manifest.productionId}/${randomUUID()}.mp4`;
