@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 import type { Express, Request, Response } from "express";
 import { getUserByOpenId, getYouTubeConnection } from "../db";
 import { ENV } from "../_core/env";
